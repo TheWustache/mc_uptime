@@ -2,7 +2,7 @@
   "username": "xxX_bobby_Xxx",
   "firstname": "Bob",
   "lastname": "Bobbsly",
-  "password": "hash",
+  "password": "pw",
   "salt": "salt",
   "availibleTimes": {
     "length": "6",

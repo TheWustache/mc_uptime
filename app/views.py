@@ -1,22 +1,34 @@
 from flask import session, redirect, url_for, render_template, request
-from flask_login import LoginManager
+from app.user import login_user, logout_user
 from app import app
 
-login_manager = LoginManager().init_app(app)
 
 @app.route('/')
 def index():
     if 'username' in session:
-        session.pop('username', None)
-        return 'index'
+        return render_template('index.html')
     return redirect(url_for('login'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-
+    # check if user is already logged in
+    if 'username' in session:
         return redirect(url_for('index'))
+
+    # if form was submitted
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if login_user(username, password):
+            return redirect(url_for('index'))
+        # TODO: Notify user that login was unsuccessful
+
+    # if login page was requested
     return render_template('login.html')
 
-# set the secret key
-app.secret_key = b'\xa5\xb8n0K~\xdb\x1d\xb2\xb0v\x0f\x03\xc5-\x8c\x94\xeeBI\xb4q\xbc\xac'
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
