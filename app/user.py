@@ -3,8 +3,10 @@ from flask import session
 import os.path
 import os
 import json
+from app.password import generate_salt, hash_password, check_password
 
 users_dir = os.path.join(os.curdir, 'app', 'users')
+
 
 def login_user(username, password):
     """Logs in user. Return True if successful, False otherwise"""
@@ -17,8 +19,7 @@ def login_user(username, password):
     user = json.load(f)
 
     # check if password matches
-    # TODO: actually make password secure
-    if password == user['password']:
+    if check_password(password, user['salt'], user['password']):
         session['username'] = username
         print("%s successful login" % username)
         return True
@@ -43,34 +44,42 @@ def user_exists(username):
     return False
 
 
-def create_user():
-    def generate_user_file(username, firstname, lastname, password, slotLength, canVote="false", rank="0"):
-        user = {
-            'username': username,
-            'firstname': firstname,
-            'lastname': lastname,
-            'password': "hash",
-            'salt': "salt",
-            'availibleTimes': {
-                'length': slotLength,
-                'slots': [
-                    {
-                        'day': 0,
-                        'slot': 0
-                    },
-                    {
-                        'day': 1,
-                        'slot': 0
-                    },
-                    {
-                        'day': 2,
-                        'slot': 0
-                    }
-                ]
-            },
-            'canVote': canVote,
-            'rank': rank
-        }
+def create_user(username, firstname, lastname, password, slotLength, canVote="false", rank="0"):
+    # secure password
+    salt = generate_salt(32)
+    secure_pw = hash_password(password, salt)
+
+    # generate user json
+    user = {
+        'username': username,
+        'firstname': firstname,
+        'lastname': lastname,
+        'password': secure_pw,
+        'salt': salt,
+        'availibleTimes': {
+            'length': slotLength,
+            'slots': [
+                {
+                    'day': 0,
+                    'slot': 0
+                },
+                {
+                    'day': 1,
+                    'slot': 0
+                },
+                {
+                    'day': 2,
+                    'slot': 0
+                }
+            ]
+        },
+        'canVote': canVote,
+        'rank': rank
+    }
+
+    # write json to file
+    f = open(os.path.join(users_dir, username + '.json'), 'w')
+    json.dump(user, f)
 
 
 if __name__ == '__main__':
