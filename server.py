@@ -1,5 +1,8 @@
-from flask import Flask, session, redirect, url_for, render_template, request
-app = Flask(__name__)
+from flask import session, redirect, url_for, render_template, request
+from flask_login import LoginManager
+from app import app
+
+login_manager = LoginManager().init_app(app)
 
 @app.route('/')
 def index():
@@ -11,9 +14,9 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        session['username'] = 'set'
+
         return redirect(url_for('index'))
     return render_template('login.html')
 
 # set the secret key
-app.secret_key = '\xa5\xb8n0K~\xdb\x1d\xb2\xb0v\x0f\x03\xc5-\x8c\x94\xeeBI\xb4q\xbc\xac'
+app.secret_key = b'\xa5\xb8n0K~\xdb\x1d\xb2\xb0v\x0f\x03\xc5-\x8c\x94\xeeBI\xb4q\xbc\xac'
