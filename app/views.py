@@ -6,7 +6,7 @@ from app import app
 @app.route('/')
 def index():
     if 'username' in session:
-        return render_template('index.html')
+        return render_template('index.html', username=session['username'])
     return redirect(url_for('login'))
 
 
@@ -32,3 +32,6 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+
+# @app.route('/')

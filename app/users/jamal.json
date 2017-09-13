@@ -1,0 +1,22 @@
+{
+  "username": "jamal",
+  "firstname": "x",
+  "lastname": "y",
+  "password": "5231fadc57144a891f2648048588f0205915243871902c7f1d3aa218ba0c5595",
+  "salt": "c2ef4Jx9LlhuiCLEjXALzcsFUtZlureA",
+  "availibleTimes": {
+    "length": 6,
+    "slots": [{
+      "day": 0,
+      "slot": 0
+    }, {
+      "day": 1,
+      "slot": 0
+    }, {
+      "day": 2,
+      "slot": 0
+    }]
+  },
+  "canVote": "false",
+  "rank": "0"
+}

@@ -102,3 +102,7 @@ venv.bak/
 .mypy_cache/
 
 *.DS_Store
+
+# sqlite
+*.db
+*.db-journal

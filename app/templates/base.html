@@ -5,7 +5,9 @@
 </head>
 
 <body>
-  <a href="/logout">Logout</a>
-  {% block body %}<p>Base<p>{% endblock %}
+  {% if username %}
+  <p>Logged in as {{username}} - <a href="/logout">Logout</a></p>
+  {% endif %}
+  {% block body %}<p>Base</p>{% endblock %}
 </body>
 </html>

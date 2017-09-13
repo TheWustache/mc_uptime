@@ -1,9 +1,9 @@
-from app import app
 from flask import session
 import os.path
 import os
 import json
 from app.password import generate_salt, hash_password, check_password
+from app.db import get_db
 
 users_dir = os.path.join(os.curdir, 'app', 'users')
 
@@ -15,15 +15,19 @@ def login_user(username, password):
         return False
 
     # read user data
-    f = open(os.path.join(users_dir, username + '.json'))
-    user = json.load(f)
+    db = get_db()
+    c = db.cursor()
+    c.execute('SELECT password, salt FROM user WHERE username = ?', (username,))
+    result = c.fetchone()
 
     # check if password matches
-    if check_password(password, user['salt'], user['password']):
+    if check_password(password, result['salt'], result['password']):
+        # TODO: Consider saving logged in unser on server instead of clientside
         session['username'] = username
         print("%s successful login" % username)
         return True
     else:
+        print("%s attempted login" % username)
         return False
 
 
@@ -34,58 +38,24 @@ def logout_user():
 
 def user_exists(username):
     """Checks whether user exists. Returns True if yes, False otherwise"""
-    # users are implicitly listed in file names
-    # TODO: make directory with users configurable
-    files = os.listdir(os.path.join(users_dir))
-    if files:
-        for user in files:
-            if (username + '.json') == user:
-                return True
-    return False
+    db = get_db()
+    c = db.cursor()
+
+    # count all occurences of username
+    c.execute('SELECT COUNT(*) FROM user WHERE username = ? GROUP BY username', (username,))
+    result = c.fetchone()
+
+    # username should occur once if it exists, fetchone yields None if not
+    return result is not None
 
 
-def create_user(username, firstname, lastname, password, slotLength, canVote="false", rank="0"):
+def create_user(username, firstname, lastname, password, slotLength, admin=False, canVote=True):
     # secure password
     salt = generate_salt(32)
     secure_pw = hash_password(password, salt)
 
-    # generate user json
-    user = {
-        'username': username,
-        'firstname': firstname,
-        'lastname': lastname,
-        'password': secure_pw,
-        'salt': salt,
-        'availibleTimes': {
-            'length': slotLength,
-            'slots': [
-                {
-                    'day': 0,
-                    'slot': 0
-                },
-                {
-                    'day': 1,
-                    'slot': 0
-                },
-                {
-                    'day': 2,
-                    'slot': 0
-                }
-            ]
-        },
-        'canVote': canVote,
-        'rank': rank
-    }
-
-    # write json to file
-    f = open(os.path.join(users_dir, username + '.json'), 'w')
-    json.dump(user, f)
-
-
-if __name__ == '__main__':
-    import sys
-    if len(sys.argv) >= 2:
-        if user_exists(sys.argv[1]):
-            print(sys.argv[1] + " exists!")
-        else:
-            print(sys.argv[1] + " does not exist!")
+    # write to database
+    db = get_db()
+    c = db.cursor()
+    c.execute('INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?)', (username, firstname, lastname, secure_pw, salt, int(admin), int(canVote)))
+    db.commit()
