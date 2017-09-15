@@ -51,6 +51,7 @@ def udpateTimes(app_id):
     username = session['username']
     db = get_db()
     c = db.cursor()
+    # if form was submitted
     if request.method == 'POST':
         #TODO: remove limit of 3 slots
         # get data from form
@@ -75,7 +76,7 @@ def udpateTimes(app_id):
         db.commit()
 
         return redirect(url_for('overview'))
-
+    # if page was requested
     else:
         # check if user has access to app
         c.execute('''SELECT COUNT(*)
@@ -99,10 +100,9 @@ def udpateTimes(app_id):
 
             # get slot length
             c.execute('''SELECT slot_length
-                FROM availible
-                WHERE user = ?
-                AND app_id = ?''',
-                      (username, app_id))
+                FROM app
+                WHERE id = ?''',
+                      (app_id,))
             slot_length = c.fetchone()['slot_length']
 
             # get slots
