@@ -50,7 +50,7 @@ def user_exists(username):
     return result is not None
 
 
-def create_user(username, firstname, lastname, password, slotLength, admin=False, canVote=True):
+def create_user(username, firstname, lastname, password, admin=False, canVote=True):
     # secure password
     salt = generate_salt(32)
     secure_pw = hash_password(password, salt)
