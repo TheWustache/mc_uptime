@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% macro timeslot(slot) %}
+{{- '%02d' % (slot // 2) -}}:{{- '%02d' % ((slot % 2) * 30) -}}
+{% endmacro %}
+
+{% block body %}
+<h1>Update availible times for '{{ app_name }}'</h1><br>
+<p>Slot length: {{ slot_length }} hours</p>
+<form method="post">
+  {% for s in slots %}
+  {{ loop.index }}. Day:
+  <select name="day{{ loop.index }}">
+    <option value="Mo">Monday</option>
+    <option value="Tu">Tuesday</option>
+    <option value="We">Wednesday</option>
+    <option value="Th">Thursday</option>
+    <option value="Fr">Friday</option>
+    <option value="Sa">Saturday</option>
+    <option value="Su">Sunday</option>
+  </select>
+  Time:
+  <select name="start{{ loop.index }}">
+    {# one slot per half hour -> 48 #}
+    {% for i in range(48 - slot_length + 1) %}
+    {% set start = loop.index - 1 %}
+    {% set end = loop.index + slot_length - 1 %}
+    <option value="{{ start }}">{{ timeslot(start) }} - {{ timeslot(end) }}</option>
+    {% endfor -%}
+  </select>
+  <br>
+  {% endfor %}
+  <input type="button" value="Update">
+</form>
+{% endblock %}

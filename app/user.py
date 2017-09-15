@@ -11,6 +11,7 @@ users_dir = os.path.join(os.curdir, 'app', 'users')
 def login_user(username, password):
     """Logs in user. Return True if successful, False otherwise"""
     # stop if user doesn't exist
+    #TODO: merge user doesn't exist and read user data -> one sql statement
     if not user_exists(username):
         return False
 
