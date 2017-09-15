@@ -35,9 +35,12 @@ def logout():
     return redirect(url_for('login'))
 
 
-# @app.route('/overview')
-# def overview():
-#     if 'username' in session:
+@app.route('/overview')
+def overview():
+    if 'username' in session:
+        return render_template('overview.html', username=session['username'])
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/updatetimes/<int:app_id>', methods=['GET', 'POST'])
