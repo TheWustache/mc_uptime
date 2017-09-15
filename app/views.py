@@ -47,14 +47,37 @@ def overview():
 def udpateTimes(app_id):
     if 'username' not in session:
         return redirect(url_for('login'))
+
+    username = session['username']
+    db = get_db()
+    c = db.cursor()
     if request.method == 'POST':
-        return 'wooooo'
+        #TODO: remove limit of 3 slots
+        # get data from form
+        slots = []
+        for i in range(1,4):
+            slots.append({'day':request.form['day'+str(i)], 'start_time':request.form['start'+str(i)]})
+        # get id of slots
+        c.execute('''SELECT slot.id
+            FROM slot
+            JOIN availible ON slot.availible_id = availible.id
+            WHERE availible.user = ?
+            AND availible.app_id = ?''',
+            (username, app_id))
+        slot_ids = c.fetchall()[:3]
+        # save data
+        for i in range(3):
+            c.execute('''UPDATE slot
+            SET day = ?, start_time = ?
+            WHERE id = ?''',
+            (slots[i]['day'], slots[i]['start_time'], slot_ids[i]['id']))
+        #TODO: Wrap in try block before committing (and abort+notify user on failure)
+        db.commit()
+
+        return redirect(url_for('overview'))
 
     else:
         # check if user has access to app
-        username = session['username']
-        db = get_db()
-        c = db.cursor()
         c.execute('''SELECT COUNT(*)
             FROM user
             JOIN availible ON user.username = availible.user
