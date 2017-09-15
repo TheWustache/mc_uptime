@@ -11,25 +11,21 @@
   {% for s in slots %}
   {{ loop.index }}. Day:
   <select name="day{{ loop.index }}">
-    <option value="Mo">Monday</option>
-    <option value="Tu">Tuesday</option>
-    <option value="We">Wednesday</option>
-    <option value="Th">Thursday</option>
-    <option value="Fr">Friday</option>
-    <option value="Sa">Saturday</option>
-    <option value="Su">Sunday</option>
+    {% for d in ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")%}
+    <option value="{{ d[:2] }}" {% if s['day'] == d[:2] %}{{ "selected" }}{% endif %}>{{ d }}</option>
+    {% endfor %}
   </select>
   Time:
   <select name="start{{ loop.index }}">
-    {# one slot per half hour -> 48 #}
+    {# one slot per half hour -> 48, +1 (and -1) to start range at 0 #}
     {% for i in range(48 - slot_length + 1) %}
     {% set start = loop.index - 1 %}
     {% set end = loop.index + slot_length - 1 %}
-    <option value="{{ start }}">{{ timeslot(start) }} - {{ timeslot(end) }}</option>
+    <option value="{{ start }}" {% if s['start_time'] == start %}{{ "selected" }}{% endif %}>{{ timeslot(start) }} - {{ timeslot(end) }}</option>
     {% endfor -%}
   </select>
   <br>
   {% endfor %}
-  <input type="button" value="Update">
+  <input type="submit" value="Update">
 </form>
 {% endblock %}
