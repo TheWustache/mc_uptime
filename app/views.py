@@ -6,23 +6,24 @@ from app.db import get_db
 
 @app.route('/')
 def index():
-    if 'username' in session:
-        return render_template('overview.html', username=session['username'])
-    return redirect(url_for('login'))
+    # if 'username' in session:
+    #     return render_template('index.html', username=session['username'])
+    # return redirect(url_for('login'))
+    return render_template('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # check if user is already logged in
     if 'username' in session:
-        return redirect(url_for('index'))
+        return redirect(url_for('overview'))
 
     # if form was submitted
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         if login_user(username, password):
-            return redirect(url_for('index'))
+            return redirect(url_for('overview'))
         # TODO: Notify user that login was unsuccessful
 
     # if login page was requested
@@ -38,7 +39,19 @@ def logout():
 @app.route('/overview')
 def overview():
     if 'username' in session:
-        return render_template('overview.html', username=session['username'])
+        username = session['username']
+        # get apps of user
+        db = get_db()
+        c = db.cursor()
+        c.execute('''SELECT app.id, name, slot_length, next_day, next_slot
+            FROM app
+            JOIN availible ON availible.app_id = app.id
+            WHERE availible.user = ?''',
+            (username,))
+        result = c.fetchall()
+        # convert Rows to dictionary
+        userApps = list(({'id':a['id'], 'name':a['name'], 'slot_length':a['slot_length'], 'next_day':a['next_day'], 'next_slot':a['next_slot']} for a in result))
+        return render_template('overview.html', username=session['username'], userApps=userApps)
     else:
         return redirect(url_for('login'))
 
