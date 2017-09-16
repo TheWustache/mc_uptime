@@ -36,6 +36,9 @@ def logout_user():
     """Logs out user"""
     session.pop('username', None)
 
+def loggedin():
+    return 'username' in session
+
 
 def user_exists(username):
     """Checks whether user exists. Returns True if yes, False otherwise"""

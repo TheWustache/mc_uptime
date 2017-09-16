@@ -1,5 +1,5 @@
 from flask import session, redirect, url_for, render_template, request
-from app.user import login_user, logout_user
+from app.user import login_user, logout_user, loggedin
 from app import app
 from app.db import get_db
 
@@ -15,7 +15,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # check if user is already logged in
-    if 'username' in session:
+    if loggedin():
         return redirect(url_for('overview'))
 
     # if form was submitted
@@ -38,7 +38,7 @@ def logout():
 
 @app.route('/overview')
 def overview():
-    if 'username' in session:
+    if loggedin():
         username = session['username']
         # get apps of user
         db = get_db()
@@ -58,7 +58,7 @@ def overview():
 
 @app.route('/updatetimes/<int:app_id>', methods=['GET', 'POST'])
 def udpateTimes(app_id):
-    if 'username' not in session:
+    if not loggedin():
         return redirect(url_for('login'))
 
     username = session['username']
