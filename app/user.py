@@ -3,7 +3,7 @@ import os.path
 import os
 import json
 from app.password import generate_salt, hash_password, check_password
-from app.db import get_db
+from app.db import get_dbc
 
 users_dir = os.path.join(os.curdir, 'app', 'users')
 
@@ -16,8 +16,7 @@ def login_user(username, password):
         return False
 
     # read user data
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
     c.execute('SELECT password, salt FROM user WHERE username = ?', (username,))
     result = c.fetchone()
 
@@ -42,8 +41,7 @@ def loggedin():
 
 
 def is_admin(username):
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
     c.execute('''SELECT admin
         FROM user
         WHERE username = ?''',
@@ -53,8 +51,7 @@ def is_admin(username):
 
 
 def user_has_app(username, app_id):
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
     c.execute('''SELECT count(*) AS count
         FROM availible
         WHERE user = ?
@@ -65,8 +62,7 @@ def user_has_app(username, app_id):
 
 
 def get_availible_id(username, app_id):
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
     c.execute('''SELECT id
         FROM availible
         WHERE user = ?
@@ -77,8 +73,7 @@ def get_availible_id(username, app_id):
 
 def user_exists(username):
     """Checks whether user exists. Returns True if yes, False otherwise"""
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
 
     # count all occurences of username
     c.execute(
@@ -95,8 +90,7 @@ def create_user(username, firstname, lastname, password, admin=False, canVote=Tr
     secure_pw = hash_password(password, salt)
 
     # write to database
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
     c.execute('INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?)', (username,
                                                                 firstname, lastname, secure_pw, salt, int(admin), int(canVote)))
     db.commit()

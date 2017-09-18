@@ -1,8 +1,10 @@
 from flask import session, redirect, url_for, render_template, request, abort, jsonify
 from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app, get_availible_id
 from app import app
-from app.db import get_db
+from app.db import get_dbc
 from app.application import app_exists
+
+# TODO: split into multiple files
 
 
 @app.route('/')
@@ -42,8 +44,7 @@ def overview():
     if loggedin():
         username = session['username']
         # get apps of user
-        db = get_db()
-        c = db.cursor()
+        db, c = get_dbc()
         c.execute('''SELECT app.id, name, slot_length, next_day, next_slot
             FROM app
             JOIN availible ON availible.app_id = app.id
@@ -66,8 +67,7 @@ def udpateTimes(app_id):
         return redirect(url_for('login'))
 
     username = session['username']
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
     # if form was submitted
     if request.method == 'POST':
         # TODO: remove 3 slots limit
@@ -150,8 +150,7 @@ def app_panel(app_id):
     if not is_admin(username):
         abort(403)
 
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
     # get app info
     c.execute('''SELECT name, filepath, slot_length, id
         FROM app
@@ -180,8 +179,7 @@ def ajax_app_add_user():
             if user_exists(user):
                 if not user_has_app(user, app_id):
                     # add user to app
-                    db = get_db()
-                    c = db.cursor()
+                    db, c = get_dbc()
                     c.execute('''INSERT INTO availible (user, app_id)
                         VALUES (?, ?)''',
                               (user, app_id))
@@ -207,8 +205,7 @@ def ajax_app_remove_user():
             if user_exists(user):
                 if user_has_app(user, app_id):
                     # remove user from app
-                    db = get_db()
-                    c = db.cursor()
+                    db, c = get_dbc()
                     c.execute('''DELETE FROM availible
                         WHERE user = ?
                         AND app_id = ?''',
@@ -224,8 +221,7 @@ def ajax_app_update_settings():
     if loggedin():
         if is_admin(session['username']):
             json = request.json
-            db = get_db()
-            c = db.cursor()
+            db, c = get_dbc()
             c.execute('''UPDATE app
                 SET name = ?, filepath = ?, slot_length = ?
                 WHERE id = ?''',

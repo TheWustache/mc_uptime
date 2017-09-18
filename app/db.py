@@ -19,7 +19,11 @@ def get_db():
         c.execute('PRAGMA foreign_keys = ON')
     return db
 
-# TODO: implement function that returns db and cursor
+
+def get_dbc():
+    """Returns db with cursor"""
+    db = get_db()
+    return (db, db.cursor())
 
 
 @app.teardown_appcontext
