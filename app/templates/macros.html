@@ -1,0 +1,27 @@
+{% macro abrToWeekday(abr) %}
+{% if abr == 'Mo' %}
+{{- "Monday" -}}
+{% endif %}
+{% if abr == 'Tu' %}
+{{- "Tuesday" -}}
+{% endif %}
+{% if abr == 'We' %}
+{{- "Wednesday" -}}
+{% endif %}
+{% if abr == 'Th' %}
+{{- "Thursday" -}}
+{% endif %}
+{% if abr == 'Fr' %}
+{{- "Friday" -}}
+{% endif %}
+{% if abr == 'Sa' %}
+{{- "Saturday" -}}
+{% endif %}
+{% if abr == 'Su' %}
+{{- "Sunday" -}}
+{% endif %}
+{% endmacro %}
+
+{% macro timeslot(slot) %}
+{{- '%02d' % (slot // 2) -}}:{{- '%02d' % ((slot % 2) * 30) -}}
+{% endmacro %}

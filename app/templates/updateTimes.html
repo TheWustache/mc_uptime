@@ -1,11 +1,8 @@
 {% extends "base.html" %}
-
-{% macro timeslot(slot) %}
-{{- '%02d' % (slot // 2) -}}:{{- '%02d' % ((slot % 2) * 30) -}}
-{% endmacro %}
+{% from 'macros.html' import timeslot %}
 
 {% block body %}
-<h1>Update availible times for '{{ app_name }}'</h1>
+<h1>Update availability for '{{ app_name }}'</h1>
 <p>Slot length: {{ slot_length }} hours</p>
 <form method="post">
   {% for s in slots %}

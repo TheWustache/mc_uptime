@@ -1,34 +1,11 @@
 {% extends "base.html" %}
-
-{% macro abrToWeekday(abr) %}
-{% if abr == 'Mo' %}
-{{ "Monday" }}
-{% endif %}
-{% if abr == 'Tu' %}
-{{ "Tuesday" }}
-{% endif %}
-{% if abr == 'We' %}
-{{ "Wednesday" }}
-{% endif %}
-{% if abr == 'Th' %}
-{{ "Thursday" }}
-{% endif %}
-{% if abr == 'Fr' %}
-{{ "Friday" }}
-{% endif %}
-{% if abr == 'Sa' %}
-{{ "Saturday" }}
-{% endif %}
-{% if abr == 'Su' %}
-{{ "Sunday" }}
-{% endif %}
-{% endmacro %}
+{% from 'macros.html' import abrToWeekday, timeslot %}
 
 {% block body %}
 <h1>Overview</h1>
 {% for app in userApps %}
 <h2>{{ app['name'] }}</h2>
-<p>Next session: {{ abrToWeekday(app['next_day']) }} ({{ app['slot_length'] // 2 }} hours)</p>
+<p>Next session: {{ app['next_day'] }} {{ app['next_date'] }}, {{ timeslot(app['next_slot']) }} - {{ timeslot(app['next_slot']+app['slot_length']) }} ({{ app['slot_length'] // 2 }} hours)</p>
 <a href="/updatetimes/{{ app['id'] }}">Update</a>
 {% endfor %}
 {% endblock %}

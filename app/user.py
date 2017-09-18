@@ -11,7 +11,7 @@ users_dir = os.path.join(os.curdir, 'app', 'users')
 def login_user(username, password):
     """Logs in user. Return True if successful, False otherwise"""
     # stop if user doesn't exist
-    #TODO: merge user doesn't exist and read user data -> one sql statement
+    # TODO: merge user doesn't exist and read user data -> one sql statement
     if not user_exists(username):
         return False
 
@@ -36,8 +36,20 @@ def logout_user():
     """Logs out user"""
     session.pop('username', None)
 
+
 def loggedin():
     return 'username' in session
+
+
+def is_admin(username):
+    db = get_db()
+    c = db.cursor()
+    c.execute('''SELECT admin
+        FROM user
+        WHERE username = ?''',
+              (username,))
+    result = c.fetchone()
+    return result['admin'] == 1
 
 
 def user_exists(username):
@@ -46,7 +58,8 @@ def user_exists(username):
     c = db.cursor()
 
     # count all occurences of username
-    c.execute('SELECT COUNT(*) FROM user WHERE username = ? GROUP BY username', (username,))
+    c.execute(
+        'SELECT COUNT(*) FROM user WHERE username = ? GROUP BY username', (username,))
     result = c.fetchone()
 
     # username should occur once if it exists, fetchone yields None if not
@@ -61,5 +74,6 @@ def create_user(username, firstname, lastname, password, admin=False, canVote=Tr
     # write to database
     db = get_db()
     c = db.cursor()
-    c.execute('INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?)', (username, firstname, lastname, secure_pw, salt, int(admin), int(canVote)))
+    c.execute('INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?)', (username,
+                                                                firstname, lastname, secure_pw, salt, int(admin), int(canVote)))
     db.commit()
