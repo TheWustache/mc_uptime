@@ -52,6 +52,18 @@ def is_admin(username):
     return result['admin'] == 1
 
 
+def user_has_app(username, app_id):
+    db = get_db()
+    c = db.cursor()
+    c.execute('''SELECT count(*) AS count
+        FROM availible
+        WHERE user = ?
+        AND app_id = ?''',
+              (username, app_id))
+    result = c.fetchone()
+    return result['count'] > 0
+
+
 def user_exists(username):
     """Checks whether user exists. Returns True if yes, False otherwise"""
     db = get_db()

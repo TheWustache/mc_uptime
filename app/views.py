@@ -1,5 +1,5 @@
 from flask import session, redirect, url_for, render_template, request, abort, jsonify
-from app.user import login_user, logout_user, loggedin, is_admin, user_exists
+from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app
 from app import app
 from app.db import get_db
 from app.application import app_exists
@@ -53,7 +53,7 @@ def overview():
         # convert Rows to dictionary
         # TODO: remove generator expression (fetch returns dict instead of row now)
         # TODO: actually assign 'next_date' the next date
-        userApps = list(({'id': a['id'], 'name': a['name'], 'slot_length': a['slot_length'], 'next_date':"placeholder",
+        userApps = list(({'id': a['id'], 'name': a['name'], 'slot_length': a['slot_length'], 'next_date': "placeholder",
                           'next_day': a['next_day'], 'next_slot': a['next_slot']} for a in result))
         return render_template('overview.html', username=session['username'], userApps=userApps)
     else:
@@ -150,7 +150,7 @@ def app_panel(app_id):
 
     username = session['username']
     # forbidden if user does not have access (operator for app or admin)
-    #TODO: implement operator status
+    # TODO: implement operator status
     if not is_admin(username):
         abort(403)
 
@@ -163,7 +163,7 @@ def app_panel(app_id):
         c.execute('''UPDATE app
             SET name = ?, filepath = ?, slot_length = ?
             WHERE id = ?''',
-            (form['name'], form['filepath'], form['slot_length'], app_id))
+                  (form['name'], form['filepath'], form['slot_length'], app_id))
         db.commit()
 
     # return page
@@ -171,7 +171,7 @@ def app_panel(app_id):
     c.execute('''SELECT name, filepath, slot_length, id
         FROM app
         WHERE id = ?''',
-        (app_id,))
+              (app_id,))
     result_app = c.fetchone()
     # getapp users
     c.execute('''SELECT user.username
@@ -179,61 +179,46 @@ def app_panel(app_id):
         JOIN user ON user.username = availible.user
         JOIN app ON app.id = availible.app_id
         WHERE app.id = ?''',
-        (app_id,))
+              (app_id,))
     result_users = c.fetchall()
     users = list((u['username'] for u in result_users))
 
     return render_template('app.html', username=username, app=result_app, users=users)
 
+
 @app.route('/ajax/app/add_user', methods=['POST'])
 def ajax_app_add_user():
-    # TODO: check for admin privileges
     if loggedin():
-        if user_exists(request.json['user']):
-            # determine wheter user has app
-            # TODO: encapsulate
-            db = get_db()
-            c = db.cursor()
-            c.execute('''SELECT count(*) AS count
-                FROM availible
-                WHERE user = ?
-                AND app_id = ?''',
-                (request.json['user'], request.json['app_id']))
-            result = c.fetchone()
-            if result['count'] == 0:
-                # add user to app
-                #TODO: give users slots
-                #TODO: maybe encapsulate in a function
-                c.execute('''INSERT INTO availible (user, app_id)
-                    VALUES (?, ?)''',
-                    (request.json['user'], request.json['app_id']))
-                db.commit()
-                return jsonify(success='True', user=request.json['user'])
+        if is_admin(session['username']):
+            if user_exists(request.json['user']):
+                if not user_has_app(request.json['user'], request.json['app_id']):
+                    # add user to app
+                    # TODO: give users slots
+                    db = get_db()
+                    c = db.cursor()
+                    c.execute('''INSERT INTO availible (user, app_id)
+                        VALUES (?, ?)''',
+                              (request.json['user'], request.json['app_id']))
+                    db.commit()
+                    return jsonify(success='True', user=request.json['user'])
     # if anything went wrong
     return jsonify(success='False')
 
+
 @app.route('/ajax/app/remove_user', methods=['POST'])
 def ajax_app_remove_user():
-    # TODO: check for admin privileges
     if loggedin():
-        if user_exists(request.json['user']):
-            # determine wheter user has app
-            # TODO: encapsulate
-            db = get_db()
-            c = db.cursor()
-            c.execute('''SELECT count(*) AS count
-                FROM availible
-                WHERE user = ?
-                AND app_id = ?''',
-                (request.json['user'], request.json['app_id']))
-            result = c.fetchone()
-            if result['count'] == 1:
-                # remove user from app
-                c.execute('''DELETE FROM availible
-                    WHERE user = ?
-                    AND app_id = ?''',
-                    (request.json['user'], request.json['app_id']))
-                db.commit()
-                return jsonify(success='True', user=request.json['user'])
+        if is_admin(session['username']):
+            if user_exists(request.json['user']):
+                if user_has_app(request.json['user'], request.json['app_id']):
+                    # remove user from app
+                    db = get_db()
+                    c = db.cursor()
+                    c.execute('''DELETE FROM availible
+                        WHERE user = ?
+                        AND app_id = ?''',
+                              (request.json['user'], request.json['app_id']))
+                    db.commit()
+                    return jsonify(success='True', user=request.json['user'])
     # if anything went wrong
     return jsonify(success='False')
