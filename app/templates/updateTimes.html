@@ -6,13 +6,13 @@
 <p>Slot length: {{ slot_length }} hours</p>
 <form method="post">
   {% for s in slots %}
-  {{ loop.index }}. Day:
+  <label>{{ loop.index }}. Day:</label>
   <select name="day{{ loop.index }}">
     {% for d in ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")%}
     <option value="{{ d[:2] }}" {% if s['day'] == d[:2] %}{{ "selected" }}{% endif %}>{{ d }}</option>
     {% endfor %}
   </select>
-  Time:
+  <label>Time:</label>
   <select name="start{{ loop.index }}">
     {# one slot per half hour -> 48, +1 (and -1) to start range at 0 #}
     {% for i in range(48 - slot_length + 1) %}

@@ -13,10 +13,13 @@
 <h1 id="title">{{ app['name'] }}</h1>
 <h2>Settings</h2>
 <form method="post">
-  Name: <input type="text" name="name" id="settings_name" value="{{ app['name'] }}"><br>
+  <label>Name:</label><br>
+  <input type="text" name="name" id="settings_name" value="{{ app['name'] }}"><br>
   {# TODO: Choose file screen maybe? #}
-  Path: <input type="text" name="filepath" id="settings_filepath" value="{{ app['filepath'] }}"><br>
-  Slot Length: <input type="text" name="slot_length" id="settings_slot_length" value="{{ app['slot_length'] }}"><br>
+  <label>Path:</label><br>
+  <input type="text" name="filepath" id="settings_filepath" value="{{ app['filepath'] }}"><br>
+  <label>Slot Length:</label><br>
+  <input type="text" name="slot_length" id="settings_slot_length" value="{{ app['slot_length'] }}"><br>
   <input type="submit" value="Update" id="update_settings">
 </form>
 <h2>users</h2>
