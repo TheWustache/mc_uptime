@@ -50,12 +50,8 @@ def overview():
             WHERE availible.user = ?''',
                   (username,))
         result = c.fetchall()
-        # convert Rows to dictionary
-        # TODO: remove generator expression (fetch returns dict instead of row now)
-        # TODO: actually assign 'next_date' the next date
-        userApps = list(({'id': a['id'], 'name': a['name'], 'slot_length': a['slot_length'], 'next_date': "placeholder",
-                          'next_day': a['next_day'], 'next_slot': a['next_slot']} for a in result))
-        return render_template('overview.html', username=session['username'], userApps=userApps)
+        # TODO: pass next session
+        return render_template('overview.html', username=session['username'], userApps=result)
     else:
         return redirect(url_for('login'))
 
@@ -232,6 +228,7 @@ def ajax_app_remove_user():
                     return jsonify(success='True', user=user)
     # if anything went wrong
     return jsonify(success='False')
+
 
 @app.route('/ajax/app/update_settings', methods=['POST'])
 def ajax_app_update_settings():

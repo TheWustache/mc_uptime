@@ -32,7 +32,7 @@ $(document).ready(function() {
       success: function(data) {
         if (data.success == 'True') {
           // create new user entry
-          var p = $('<p>', {
+          var li = $('<li>', {
             'id': data.user
           }).text(data.user + ' ');
           var a = $('<a>', {
@@ -42,8 +42,8 @@ $(document).ready(function() {
           }).text('(remove)');
           // bind remove_user function to link
           a.on('click', remove_user);
-          p.append(a);
-          $('#users').append(p);
+          li.append(a);
+          $('#users').append(li);
         }
       }
     });
