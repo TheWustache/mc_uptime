@@ -152,24 +152,13 @@ def app_panel(app_id):
 
     db = get_db()
     c = db.cursor()
-    # if form was submitted
-    if request.method == 'POST':
-        form = request.form
-        # update database
-        c.execute('''UPDATE app
-            SET name = ?, filepath = ?, slot_length = ?
-            WHERE id = ?''',
-                  (form['name'], form['filepath'], form['slot_length'], app_id))
-        db.commit()
-
-    # return page
     # get app info
     c.execute('''SELECT name, filepath, slot_length, id
         FROM app
         WHERE id = ?''',
               (app_id,))
     result_app = c.fetchone()
-    # getapp users
+    # get app users
     c.execute('''SELECT user.username
         FROM availible
         JOIN user ON user.username = availible.user
