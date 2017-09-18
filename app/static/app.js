@@ -10,7 +10,7 @@ function remove_user(event) {
     success: function(data) {
       if (data.success == 'True') {
         // remove p with user
-        $('#users > #' + data.user).remove()
+        $('#users > #' + data.user).remove();
       }
     }
   });

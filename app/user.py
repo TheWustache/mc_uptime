@@ -64,6 +64,17 @@ def user_has_app(username, app_id):
     return result['count'] > 0
 
 
+def get_availible_id(username, app_id):
+    db = get_db()
+    c = db.cursor()
+    c.execute('''SELECT id
+        FROM availible
+        WHERE user = ?
+        AND app_id = ?''',
+        (username, app_id))
+    return c.fetchone()['id']
+
+
 def user_exists(username):
     """Checks whether user exists. Returns True if yes, False otherwise"""
     db = get_db()

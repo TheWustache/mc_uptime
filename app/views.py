@@ -1,5 +1,5 @@
 from flask import session, redirect, url_for, render_template, request, abort, jsonify
-from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app
+from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app, get_availible_id
 from app import app
 from app.db import get_db
 from app.application import app_exists
@@ -190,17 +190,25 @@ def app_panel(app_id):
 def ajax_app_add_user():
     if loggedin():
         if is_admin(session['username']):
-            if user_exists(request.json['user']):
-                if not user_has_app(request.json['user'], request.json['app_id']):
+            user = request.json['user']
+            app_id = request.json['app_id']
+            if user_exists(user):
+                if not user_has_app(user, app_id):
                     # add user to app
-                    # TODO: give users slots
                     db = get_db()
                     c = db.cursor()
                     c.execute('''INSERT INTO availible (user, app_id)
                         VALUES (?, ?)''',
-                              (request.json['user'], request.json['app_id']))
+                              (user, app_id))
+                    # give users slots
+                    # TODO: make slot amount adjustable
+                    availible_id = get_availible_id(
+                        user, app_id)
+                    c.execute('''INSERT INTO slot (day, start_time, availible_id)
+                        VALUES ('Mo', 0, ?), ('Mo', 0, ?), ('Mo', 0, ?)''',
+                              (availible_id, availible_id, availible_id))
                     db.commit()
-                    return jsonify(success='True', user=request.json['user'])
+                    return jsonify(success='True', user=user)
     # if anything went wrong
     return jsonify(success='False')
 
@@ -209,16 +217,18 @@ def ajax_app_add_user():
 def ajax_app_remove_user():
     if loggedin():
         if is_admin(session['username']):
-            if user_exists(request.json['user']):
-                if user_has_app(request.json['user'], request.json['app_id']):
+            user = request.json['user']
+            app_id = request.json['app_id']
+            if user_exists(user):
+                if user_has_app(user, app_id):
                     # remove user from app
                     db = get_db()
                     c = db.cursor()
                     c.execute('''DELETE FROM availible
                         WHERE user = ?
                         AND app_id = ?''',
-                              (request.json['user'], request.json['app_id']))
+                              (user, app_id))
                     db.commit()
-                    return jsonify(success='True', user=request.json['user'])
+                    return jsonify(success='True', user=user)
     # if anything went wrong
     return jsonify(success='False')
