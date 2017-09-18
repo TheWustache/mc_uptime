@@ -10,14 +10,14 @@
 {% endblock %}
 
 {% block body %}
-<h1>{{ app['name'] }}</h1>
+<h1 id="title">{{ app['name'] }}</h1>
 <h2>Settings</h2>
 <form method="post">
-  Name: <input type="text" name="name" value="{{ app['name'] }}"><br>
+  Name: <input type="text" name="name" id="settings_name" value="{{ app['name'] }}"><br>
   {# TODO: Choose file screen maybe? #}
-  Path: <input type="text" name="filepath" value="{{ app['filepath'] }}"><br>
-  Slot Length: <input type="text" name="slot_length" value="{{ app['slot_length'] }}"><br>
-  <input type="submit" value="Update">
+  Path: <input type="text" name="filepath" id="settings_filepath" value="{{ app['filepath'] }}"><br>
+  Slot Length: <input type="text" name="slot_length" id="settings_slot_length" value="{{ app['slot_length'] }}"><br>
+  <input type="submit" value="Update" id="update_settings">
 </form>
 <h2>users</h2>
 <div id="users">
@@ -25,6 +25,9 @@
   <p id="{{ u }}">{{ u }} <a href="#" class="remove_user" data-user="{{ u }}">(remove)</a></p>
   {% endfor %}
 </div>
-<input type="text" name="new_user" value="" id="new_user"><button type="button" name="add_user" id="add_user">Add User</button>
+<form>
+  <input type="text" name="new_user" value="" id="new_user">
+  <input type="submit" value="Add User" name="add_user" id="add_user">
+</form>
 <input type="hidden" name="app_id_hidden" id="app_id" value="{{ app['id'] }}">
 {% endblock %}

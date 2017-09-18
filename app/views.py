@@ -232,3 +232,17 @@ def ajax_app_remove_user():
                     return jsonify(success='True', user=user)
     # if anything went wrong
     return jsonify(success='False')
+
+@app.route('/ajax/app/update_settings', methods=['POST'])
+def ajax_app_update_settings():
+    if loggedin():
+        if is_admin(session['username']):
+            json = request.json
+            db = get_db()
+            c = db.cursor()
+            c.execute('''UPDATE app
+                SET name = ?, filepath = ?, slot_length = ?
+                WHERE id = ?''',
+                      (json['name'], json['filepath'], json['slot_length'], json['app_id']))
+            db.commit()
+    return jsonify(name=request.json['name'])

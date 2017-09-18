@@ -19,7 +19,8 @@ function remove_user(event) {
 $(document).ready(function() {
   $('a.remove_user').on('click', remove_user);
 
-  $('button#add_user').on('click', function(event) {
+  $('#add_user').on('click', function(event) {
+    event.preventDefault();
     $.ajax({
       type: 'POST',
       url: '/ajax/app/add_user',
@@ -44,6 +45,24 @@ $(document).ready(function() {
           p.append(a);
           $('#users').append(p);
         }
+      }
+    });
+  });
+
+  $('#update_settings').on('click', function( event ) {
+    event.preventDefault();
+    $.ajax({
+      type: 'POST',
+      url: '/ajax/app/update_settings',
+      data: JSON.stringify({
+        'name': $('#settings_name').val(),
+        'filepath': $('#settings_filepath').val(),
+        'slot_length': $('#settings_slot_length').val(),
+        'app_id': $("#app_id").val()
+      }),
+      contentType: 'application/json;charset=UTF-8',
+      success: function(data) {
+        $('#title').text(data.name)
       }
     });
   });
