@@ -187,9 +187,11 @@ def app_panel(app_id):
 
 @app.route('/ajax/app/add_user', methods=['POST'])
 def ajax_app_add_user():
+    # TODO: check for admin privileges
     if loggedin():
         if user_exists(request.json['user']):
             # determine wheter user has app
+            # TODO: encapsulate
             db = get_db()
             c = db.cursor()
             c.execute('''SELECT count(*) AS count
@@ -204,6 +206,32 @@ def ajax_app_add_user():
                 #TODO: maybe encapsulate in a function
                 c.execute('''INSERT INTO availible (user, app_id)
                     VALUES (?, ?)''',
+                    (request.json['user'], request.json['app_id']))
+                db.commit()
+                return jsonify(success='True', user=request.json['user'])
+    # if anything went wrong
+    return jsonify(success='False')
+
+@app.route('/ajax/app/remove_user', methods=['POST'])
+def ajax_app_remove_user():
+    # TODO: check for admin privileges
+    if loggedin():
+        if user_exists(request.json['user']):
+            # determine wheter user has app
+            # TODO: encapsulate
+            db = get_db()
+            c = db.cursor()
+            c.execute('''SELECT count(*) AS count
+                FROM availible
+                WHERE user = ?
+                AND app_id = ?''',
+                (request.json['user'], request.json['app_id']))
+            result = c.fetchone()
+            if result['count'] == 1:
+                # remove user from app
+                c.execute('''DELETE FROM availible
+                    WHERE user = ?
+                    AND app_id = ?''',
                     (request.json['user'], request.json['app_id']))
                 db.commit()
                 return jsonify(success='True', user=request.json['user'])
