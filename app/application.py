@@ -1,10 +1,9 @@
-from app.db import get_db
+from app.db import get_dbc
 
 #TODO: get_app_info(app_id)
 
 def app_exists(app_id):
-    db = get_db()
-    c = db.cursor()
+    db, c = get_dbc()
     c.execute('''SELECT COUNT(*)
         FROM app
         WHERE id = ?

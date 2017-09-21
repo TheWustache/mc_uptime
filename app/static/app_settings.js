@@ -1,4 +1,5 @@
 function remove_user(event) {
+  event.preventDefault();
   $.ajax({
     type: 'POST',
     url: '/ajax/app/remove_user',

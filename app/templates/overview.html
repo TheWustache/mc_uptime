@@ -4,7 +4,7 @@
 {% block body %}
 <h1>Overview</h1>
 {% for app in userApps %}
-<h2>{{ app['name'] }}</h2>
+<h2><a href="{{ url_for('app_overview', app_id=app['id'])}}">{{ app['name'] }}</a></h2>
 <p>Next session: {{ app['next_day'] }} {{ app['next_date'] }}, {{ timeslot(app['next_slot']) }} - {{ timeslot(app['next_slot']+app['slot_length']) }} ({{ app['slot_length'] // 2 }} hours)</p>
 <a href="/updatetimes/{{ app['id'] }}">Update</a>
 {% endfor %}

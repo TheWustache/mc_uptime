@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>New User</h1>
+<form method="post">
+  <label>Username:</label><br>
+  <input type="text" name="username" required><br>
+  <label>Password:</label><br>
+  <input type="text" name="password" required><br>
+  <label>Firstame:</label><br>
+  <input type="text" name="firstname"><br>
+  <label>Lastname:</label><br>
+  <input type="text" name="lastname"><br>
+  <label>Admin:</label>
+  <input type="checkbox" name="admin"><br>
+  <label>Can Vote:</label>
+  <input type="checkbox" name="can_vote" checked><br>
+  <input type="submit" id="submit">
+</form>
+{% endblock %}

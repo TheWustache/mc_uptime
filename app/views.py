@@ -1,8 +1,9 @@
 from flask import session, redirect, url_for, render_template, request, abort, jsonify
-from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app, get_availible_id
+from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app, get_availible_id, create_user
 from app import app
 from app.db import get_dbc
 from app.application import app_exists
+from app.controller import next_session
 
 # TODO: split into multiple files
 
@@ -52,13 +53,15 @@ def overview():
                   (username,))
         result = c.fetchall()
         # TODO: pass next session
+        for r in result:
+            r['next_day'], r['next_slot'] = next_session(r['id'])
         return render_template('overview.html', username=session['username'], userApps=result)
     else:
         return redirect(url_for('login'))
 
 
 @app.route('/updatetimes/<int:app_id>', methods=['GET', 'POST'])
-def udpateTimes(app_id):
+def updateTimes(app_id):
     # not found if app doesn't exists
     if not app_exists(app_id):
         abort(404)
@@ -134,8 +137,8 @@ def udpateTimes(app_id):
             return render_template('updateTimes.html', username=username, app_name=app_name, slot_length=slot_length, slots=slots)
 
 
-@app.route('/app/<int:app_id>', methods=['GET', 'POST'])
-def app_panel(app_id):
+@app.route('/app/<int:app_id>/settings', methods=['GET'])
+def app_settings(app_id):
 
     # not found if app doesn't exists
     if not app_exists(app_id):
@@ -167,7 +170,7 @@ def app_panel(app_id):
     result_users = c.fetchall()
     users = list((u['username'] for u in result_users))
 
-    return render_template('app.html', username=username, app=result_app, users=users)
+    return render_template('app_settings.html', username=username, app=result_app, users=users)
 
 
 @app.route('/ajax/app/add_user', methods=['POST'])
@@ -228,3 +231,122 @@ def ajax_app_update_settings():
                       (json['name'], json['filepath'], json['slot_length'], json['app_id']))
             db.commit()
     return jsonify(name=request.json['name'])
+
+
+@app.route('/app/<int:app_id>')
+def app_overview(app_id):
+    # not found if app doesn't exists
+    if not app_exists(app_id):
+        abort(404)
+    # user needs to be logged in
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    username = session['username']
+    db, c = get_dbc()
+    # get app info
+    c.execute('''SELECT name, slot_length, id
+        FROM app
+        WHERE id = ?''',
+              (app_id,))
+    result_app = c.fetchone()
+    # get app users
+    c.execute('''SELECT user.username
+        FROM availible
+        JOIN user ON user.username = availible.user
+        JOIN app ON app.id = availible.app_id
+        WHERE app.id = ?''',
+              (app_id,))
+    result_users = c.fetchall()
+    users = list((u['username'] for u in result_users))
+
+    return render_template('app.html', username=username, app=result_app, users=users, admin=is_admin(username))
+
+
+@app.route('/admin')
+def admin_panel():
+    # user needs to be logged in
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    username = session['username']
+    # forbidden if user does not have access (operator for app or admin)
+    # TODO: implement operator status
+    if not is_admin(username):
+        abort(403)
+
+    db, c = get_dbc()
+    # get all apps
+    c.execute('''SELECT name, id
+        FROM app''')
+    result_apps = c.fetchall()
+
+    # get all users
+    c.execute('''SELECT username
+        FROM user''')
+    result_users = c.fetchall()
+    users = list((u['username'] for u in result_users))
+
+    return render_template('admin_panel.html', username=username, apps=result_apps, users=users)
+
+
+@app.route('/admin/new_app', methods=['GET', 'POST'])
+def new_app():
+    # user needs to be logged in
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    username = session['username']
+    # forbidden if user does not have access (operator for app or admin)
+    if not is_admin(username):
+        abort(403)
+
+    return 'new app'
+
+
+@app.route('/admin/new_user', methods=['GET', 'POST'])
+def new_user():
+    #TODO: encapsulate this shite
+    # user needs to be logged in
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    username = session['username']
+    # forbidden if user does not have access (operator for app or admin)
+    if not is_admin(username):
+        abort(403)
+
+    # if form was submitted
+    if request.method == 'POST':
+        # create user
+        u = request.form['username']
+        pw = request.form['password']
+        fn = request.form['firstname']
+        ln = request.form['lastname']
+        a = request.form.get('admin') is not None
+        v = request.form.get('can_vote') is not None
+
+        create_user(u, fn, ln, pw, a, v)
+
+        return redirect(url_for('admin_panel'))
+
+    # if page was requested
+    else:
+        return render_template('new_user.html', username=username)
+
+
+@app.route('/ajax/admin/remove_user', methods=['POST'])
+def ajax_admin_remove_user():
+    if loggedin():
+        if is_admin(session['username']):
+            user = request.json['user']
+            if user_exists(user):
+                # remove user
+                db, c = get_dbc()
+                c.execute('''DELETE FROM user
+                    WHERE username = ?''',
+                          (user,))
+                db.commit()
+                return jsonify(success='True', user=user)
+    # if anything went wrong
+    return jsonify(success='False')
