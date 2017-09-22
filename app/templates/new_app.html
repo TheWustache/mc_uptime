@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<script type=text/javascript src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='new_app.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<h1>New App</h1>
+<form method="post">
+  <label>Name:</label><br>
+  <input type="text" name="name" id="name" required><br>
+  <label>Path:</label><br>
+  <input type="text" id="path" name="filepath"><br>
+  <label>Add Users:</label><br>
+  <input type="text" id="user_query"><br>
+  <ul id="query_result">
+  </ul>
+  <p>Added Users:</p>
+  <ul id="added_users">
+  </ul>
+  <input type="submit" id="submit">
+</form>
+{% endblock %}

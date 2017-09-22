@@ -2,7 +2,7 @@ from flask import session, redirect, url_for, render_template, request, abort, j
 from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app, get_availible_id, create_user
 from app import app
 from app.db import get_dbc
-from app.application import app_exists
+from app.application import app_exists, app_add_user
 from app.controller import next_session
 
 # TODO: split into multiple files
@@ -181,19 +181,8 @@ def ajax_app_add_user():
             app_id = request.json['app_id']
             if user_exists(user):
                 if not user_has_app(user, app_id):
-                    # add user to app
-                    db, c = get_dbc()
-                    c.execute('''INSERT INTO availible (user, app_id)
-                        VALUES (?, ?)''',
-                              (user, app_id))
-                    # give users slots
-                    # TODO: make slot amount adjustable
-                    availible_id = get_availible_id(
-                        user, app_id)
-                    c.execute('''INSERT INTO slot (day, start_time, availible_id)
-                        VALUES ('Mo', 0, ?), ('Mo', 0, ?), ('Mo', 0, ?)''',
-                              (availible_id, availible_id, availible_id))
-                    db.commit()
+                    # TODO: encapsulate
+                    app_add_user(app_id, user)
                     return jsonify(success='True', user=user)
     # if anything went wrong
     return jsonify(success='False')
@@ -301,7 +290,7 @@ def new_app():
     if not is_admin(username):
         abort(403)
 
-    return 'new app'
+    return render_template('new_app.html')
 
 
 @app.route('/admin/new_user', methods=['GET', 'POST'])
@@ -325,6 +314,7 @@ def new_user():
         ln = request.form['lastname']
         a = request.form.get('admin') is not None
         v = request.form.get('can_vote') is not None
+        # TODO: check that users doesn't exist
 
         create_user(u, fn, ln, pw, a, v)
 
@@ -350,3 +340,42 @@ def ajax_admin_remove_user():
                 return jsonify(success='True', user=user)
     # if anything went wrong
     return jsonify(success='False')
+
+
+@app.route('/ajax/user_query')
+def user_query():
+    users = []
+    searchterm = request.args.get('searchterm')
+    # only search if searchterm is not empty
+    if searchterm:
+        db, c = get_dbc()
+        # get all users that begin with searchterm
+        var = searchterm + '%'
+        c.execute('''SELECT username
+            FROM user
+            WHERE username LIKE ?''',
+            (var,))
+        result = c.fetchall()
+        # extract usernames
+        if result is not None:
+            users.extend(u['username'] for u in result)
+    return jsonify(users=users)
+
+
+@app.route('/ajax/admin/new_app/submit', methods=['POST'])
+def ajax_admin_newapp_submit():
+    # TODO: encapsulate maybe?
+    db, c = get_dbc();
+    name = request.json['name']
+    filepath = request.json['filepath']
+    # create new app
+    c.execute('''INSERT INTO app (name, filepath)
+        VALUES (?, ?)''',
+        (name, filepath))
+    db.commit()
+    # get app id
+    app_id = c.lastrowid
+    # add users
+    for u in request.json['users']:
+        app_add_user(app_id, u)
+    return ('', 204);
