@@ -14,9 +14,12 @@
 <h1>Admin Panel</h1>
 <h2>General Settings</h2>
 <h2>Apps</h2>
-<ul>
+<ul id="apps">
   {% for a in apps %}
-  <li><a href="{{ url_for('app_settings', app_id=a['id']) }}">{{ a['name'] }}</a></li>
+  <li id="{{ 'app_' + a['id']|string }}">
+    <a href="{{ url_for('app_settings', app_id=a['id']) }}">{{ a['name'] }}</a>
+    <a href="#" class="remove_app" data-app-id="{{ a['id'] }}" data-app-name="{{ a['name'] }}">(X)</a>
+  </li>
   {% endfor %}
 </ul>
 <a href="{{ url_for('new_app') }}">New App</a>

@@ -379,3 +379,20 @@ def ajax_admin_newapp_submit():
     for u in request.json['users']:
         app_add_user(app_id, u)
     return ('', 204);
+
+
+@app.route('/ajax/admin/remove_app', methods=['POST'])
+def ajax_admin_remove_app():
+    if loggedin():
+        if is_admin(session['username']):
+            app_id = request.json['app_id']
+            if app_exists(app_id):
+                # remove app
+                db, c = get_dbc()
+                c.execute('''DELETE FROM app
+                    WHERE id = ?''',
+                          (app_id,))
+                db.commit()
+                return jsonify(success='True', app_id=app_id)
+    # if anything went wrong
+    return jsonify(success='False')
