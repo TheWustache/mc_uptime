@@ -1,7 +1,6 @@
 from flask import session
 import os.path
 import os
-import json
 from app.password import generate_salt, hash_password, check_password
 from app.db import get_dbc
 
