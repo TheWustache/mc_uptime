@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<script type=text/javascript src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='admin_users.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<h1>Admin Panel - Users</h1>
+<h2>Users</h2>
+<ul id="users">
+  {% for u in users %}
+  <li id="{{ u }}">{{ u }} <a href="#" class="remove_user" data-user="{{ u }}">(X)</a></li>
+  {% endfor %}
+</ul>
+<a href="{{ url_for('new_user') }}">New User</a><br>
+<button type="button" name="update" id="button_update">Update</button>
+{% endblock %}

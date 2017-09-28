@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from 'macros.html' import abrToWeekday, timeslot %}
+
+{% block head %}
+{{ super() }}
+<script type=text/javascript src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='admin_slots.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<h1>Admin Panel - Slots</h1>
+<h2>General</h2>
+<form>
+  <label>Slot Length (in 0.5h)</label><br>
+  <input type="text" id="slot_length" value="{{ slot_length }}"><br>
+  <input type="submit" id="button_update" value="Update">
+</form>
+<h2>Current Slots</h2>
+<ul id="slots">
+  {% for s in slots %}
+  <li data-slot="{{ s }}">
+    {{ s }} ({{ timeslot(s) }} - {{ timeslot(s + slot_length) }})
+    <a href="#" class="remove_slot" data-slot="{{ s }}">(X)</a>
+  </li>
+  {% endfor %}
+</ul>
+<label>Add New Slot</label><br>
+<select id="select_box_slots">
+  {% for i in range(48 - slot_length) %}
+  {% if i not in slots %}
+  <option value="{{ i }}">{{ i }} ({{ timeslot(i) }} - {{ timeslot(i + slot_length) }})</option>
+  {% endif %}
+  {% endfor %}
+</select>
+<input type="button" id="button_add_slot" value="Add"><br>
+{% endblock %}

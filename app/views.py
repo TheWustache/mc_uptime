@@ -2,6 +2,7 @@ from flask import session, redirect, url_for, render_template, request, abort, j
 from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app, get_availible_id, create_user
 from app import app
 from app.db import get_dbc
+from app.settings import get_setting, set_setting
 
 # TODO: split into multiple files
 
@@ -63,12 +64,22 @@ def updateTimes():
         return render_template('updateTimes.html', username=username)
 
 
-
-
-
-
 @app.route('/admin')
 def admin_panel():
+    # user needs to be logged in
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    username = session['username']
+    # forbidden if user does not have access (operator for app or admin)
+    if not is_admin(username):
+        abort(403)
+
+    return render_template('admin_panel.html', username=username)
+
+
+@app.route('/admin/users')
+def admin_users():
     # user needs to be logged in
     if not loggedin():
         return redirect(url_for('login'))
@@ -85,14 +96,36 @@ def admin_panel():
     result_users = c.fetchall()
     users = list((u['username'] for u in result_users))
 
-    return render_template('admin_panel.html', username=username, users=users)
+    return render_template('admin_users.html', username=username, users=users)
 
 
+@app.route('/admin/slots', methods=['GET', 'POST'])
+def admin_slots():
+    # user needs to be logged in
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    username = session['username']
+    # forbidden if user does not have access (operator for app or admin)
+    if not is_admin(username):
+        abort(403)
+
+    # get all slots
+    db, c = get_dbc()
+    c.execute('''SELECT start_time
+        FROM slot''')
+    result_slots = c.fetchall()
+    slots = list((s['start_time'] for s in result_slots))
+
+    # get slot length
+    slot_length = get_setting('slot_length')
+
+    return render_template('admin_slots.html', username=username, slots=slots, slot_length=slot_length)
 
 
 @app.route('/admin/new_user', methods=['GET', 'POST'])
 def new_user():
-    #TODO: encapsulate this shite
+    # TODO: encapsulate this shite
     # user needs to be logged in
     if not loggedin():
         return redirect(url_for('login'))
@@ -115,7 +148,7 @@ def new_user():
 
         create_user(u, fn, ln, pw, a, v)
 
-        return redirect(url_for('admin_panel'))
+        return redirect(url_for('admin_users'))
 
     # if page was requested
     else:
@@ -151,9 +184,48 @@ def user_query():
         c.execute('''SELECT username
             FROM user
             WHERE username LIKE ?''',
-            (var,))
+                  (var,))
         result = c.fetchall()
         # extract usernames
         if result is not None:
             users.extend(u['username'] for u in result)
     return jsonify(users=users)
+
+
+@app.route('/ajax/admin/slots/update', methods=['POST'])
+def ajax_admin_slots_update():
+    if loggedin():
+        if is_admin(session['username']):
+            # update slot length
+            set_setting('slot_length', request.json['slot_length'])
+            return ('', 204)
+    else:
+        abort(403)
+
+@app.route('/ajax/admin/slots/add_slot', methods=['POST'])
+def ajax_admin_slots_add_slot():
+    if loggedin():
+        if is_admin(session['username']):
+            # add slot
+            db, c = get_dbc()
+            c.execute('''INSERT INTO slot
+                VALUES (null, ?)''',
+                (request.json['slot']))
+            db.commit()
+            return ('', 204)
+    else:
+        abort(403)
+
+@app.route('/ajax/admin/slots/remove_slot', methods=['POST'])
+def ajax_admin_slots_remove_slot():
+    if loggedin():
+        if is_admin(session['username']):
+            # remove slot
+            db, c = get_dbc()
+            c.execute('''DELETE FROM slot
+                WHERE start_time = ?''',
+                (request.json['slot']))
+            db.commit()
+            return ('', 204)
+    else:
+        abort(403)
