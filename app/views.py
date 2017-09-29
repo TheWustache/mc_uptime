@@ -197,7 +197,7 @@ def ajax_admin_slots_update():
     if loggedin():
         if is_admin(session['username']):
             # update slot length
-            set_setting('slot_length', request.json['slot_length'])
+            set_setting('slot_length', int(request.json['slot_length']))
             return ('', 204)
     else:
         abort(403)
@@ -210,7 +210,7 @@ def ajax_admin_slots_add_slot():
             db, c = get_dbc()
             c.execute('''INSERT INTO slot
                 VALUES (null, ?)''',
-                (request.json['slot']))
+                (request.json['slot'],))
             db.commit()
             return ('', 204)
     else:

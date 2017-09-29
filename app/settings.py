@@ -1,31 +1,42 @@
-import json
+from app.db import get_dbc
+from datetime import datetime
 
 settings_path = '/Users/leo/Projects/mc_uptime_server/app/settings.json'
 
-def init_settings():
-    settings = {
-        'slot_length': 6
-    }
-
-    f = open(settings_path, 'w')
-    json.dump(settings, f)
-    f.close()
-
 def get_setting(setting):
-    f = open(settings_path, 'r')
-    j = json.load(f)
-    f.close()
-    return j[setting]
+    db, c = get_dbc()
+    # fetch from db
+    c.execute('''SELECT value, type
+        FROM setting
+        WHERE key = ?''',
+        (setting,))
+    result = c.fetchone()
+    val = result['value']
+    t = result['type']
+    # convert type if necessary
+    if t == 'int':
+        val = int(val)
+    elif t == 'bool':
+        val = val == 'True'
+    elif t == 'date':
+        val = datetime.strptime(val, '%Y-%m-%d %H:%M:%S.%f')
+    return val
 
 def set_setting(setting, value):
-    f = open(settings_path, 'r')
-    j = json.load(f)
-    f.close()
-    j[setting] = value
-    f = open(settings_path, 'w')
-    json.dump(j, f)
-    f.close()
-
-
-if __name__ == '__main__':
-    init_settings()
+    db, c = get_dbc()
+    # get type
+    t = 'string'
+    if type(value) is int:
+        t = 'int'
+    elif type(value) is bool:
+        t = 'bool'
+    elif type(value) is datetime.datetime:
+        t = 'date'
+    # convert value to string
+    value = str(value)
+    # write to db
+    c.execute('''UPDATE setting
+        SET value = ?, type = ?
+        WHERE key = ?''',
+        (value, t, setting))
+    db.commit()

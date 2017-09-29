@@ -21,3 +21,9 @@ CREATE TABLE slot (
   id INTEGER PRIMARY KEY,
   start_time INTEGER
 );
+
+CREATE TABLE setting (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  type TEXT NOT NULL
+);
