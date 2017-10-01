@@ -30,7 +30,7 @@ def login():
         # TODO: Notify user that login was unsuccessful
 
     # if login page was requested
-    return render_template('login.html')
+    return render_template('login.html.j2')
 
 
 @app.route('/logout')
@@ -43,7 +43,7 @@ def logout():
 def overview():
     if loggedin():
         username = session['username']
-        return render_template('overview.html', username=session['username'])
+        return render_template('overview.html.j2', username=session['username'])
     else:
         return redirect(url_for('login'))
 
@@ -68,7 +68,7 @@ def updateTimes():
         start_times = list(s['start_time'] for s in result)
         # get slot length
         slot_length = get_setting('slot_length')
-        return render_template('updateTimes.html', username=username, slots=start_times, slot_length=slot_length)
+        return render_template('updateTimes.html.j2', username=username, slots=start_times, slot_length=slot_length)
 
 
 @app.route('/admin')
@@ -82,7 +82,7 @@ def admin_panel():
     if not is_admin(username):
         abort(403)
 
-    return render_template('admin_panel.html', username=username)
+    return render_template('admin_panel.html.j2', username=username)
 
 
 @app.route('/admin/users')
@@ -103,7 +103,7 @@ def admin_users():
     result_users = c.fetchall()
     users = list((u['username'] for u in result_users))
 
-    return render_template('admin_users.html', username=username, users=users)
+    return render_template('admin_users.html.j2', username=username, users=users)
 
 
 @app.route('/admin/slots', methods=['GET', 'POST'])
@@ -127,7 +127,7 @@ def admin_slots():
     # get slot length
     slot_length = get_setting('slot_length')
 
-    return render_template('admin_slots.html', username=username, slots=slots, slot_length=slot_length)
+    return render_template('admin_slots.html.j2', username=username, slots=slots, slot_length=slot_length)
 
 
 @app.route('/admin/new_user', methods=['GET', 'POST'])
@@ -159,7 +159,7 @@ def new_user():
 
     # if page was requested
     else:
-        return render_template('new_user.html', username=username)
+        return render_template('new_user.html.j2', username=username)
 
 
 @app.route('/ajax/admin/remove_user', methods=['POST'])
