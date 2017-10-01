@@ -92,4 +92,9 @@ def create_user(username, firstname, lastname, password, admin=False, canVote=Tr
     db, c = get_dbc()
     c.execute('INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?)', (username,
                                                                 firstname, lastname, secure_pw, salt, int(admin), int(canVote)))
+    # create 3 user_slot entries
+    c.executemany('''INSERT INTO user_slot
+        VALUES (null, ?, null, 0)''',
+        [(username,),(username,),(username,)])
+
     db.commit()

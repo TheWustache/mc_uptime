@@ -20,6 +20,7 @@ def get_setting(setting):
         val = val == 'True'
     elif t == 'date':
         val = datetime.strptime(val, '%Y-%m-%d %H:%M:%S.%f')
+    print(type(val))
     return val
 
 def set_setting(setting, value):

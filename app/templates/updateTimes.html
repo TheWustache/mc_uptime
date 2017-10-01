@@ -1,9 +1,23 @@
 {% extends "base.html" %}
-{% from 'macros.html' import timeslot %}
+{% from 'macros.html' import timeslot, numToWeekdayAbbr %}
 
 {% block body %}
 <h1>Update availability</h1>
 <form method="post">
+  {% for i in range(3) %}
+  <label>{{ loop.index }}. Day:</label>
+  <select name="day-{{ loop.index }}">
+    {% for k in range(7) %}
+    <option value="{{ loop.index0 }}">{{ numToWeekdayAbbr(loop.index0) }}</option>
+    {% endfor %}
+  </select>
+  <label>Slot:</label>
+  <select name="slot-{{ loop.index }}">
+    {% for s in slots %}
+    <option value="{{ s }}">{{ timeslot(s) + " - " + timeslot(s + slot_length) }}</option>
+    {% endfor %}
+  </select><br>
+  {% endfor %}
   <input type="submit" value="Update">
 </form>
 {% endblock %}

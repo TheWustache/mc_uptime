@@ -61,7 +61,14 @@ def updateTimes():
 
     # if page was requested
     else:
-        return render_template('updateTimes.html', username=username)
+        # get slot start times
+        c.execute('''SELECT start_time
+            FROM slot''')
+        result = c.fetchall()
+        start_times = list(s['start_time'] for s in result)
+        # get slot length
+        slot_length = get_setting('slot_length')
+        return render_template('updateTimes.html', username=username, slots=start_times, slot_length=slot_length)
 
 
 @app.route('/admin')

@@ -1,24 +1,21 @@
-{% macro abrToWeekday(abr) %}
-{% if abr == 'Mo' %}
-{{- "Monday" -}}
-{% endif %}
-{% if abr == 'Tu' %}
-{{- "Tuesday" -}}
-{% endif %}
-{% if abr == 'We' %}
-{{- "Wednesday" -}}
-{% endif %}
-{% if abr == 'Th' %}
-{{- "Thursday" -}}
-{% endif %}
-{% if abr == 'Fr' %}
-{{- "Friday" -}}
-{% endif %}
-{% if abr == 'Sa' %}
-{{- "Saturday" -}}
-{% endif %}
-{% if abr == 'Su' %}
-{{- "Sunday" -}}
+{# converts number between 0 and 6 to weekday abbrevation, Mo - 0, Su - 6#}
+{% macro numToWeekdayAbbr(d) %}
+{% if d == 0 %}
+{{ "Mo"}}
+{% elif d == 1 %}
+{{ "Tu"}}
+{% elif d == 2 %}
+{{ "We"}}
+{% elif d == 3 %}
+{{ "Th"}}
+{% elif d == 4 %}
+{{ "Fr"}}
+{% elif d == 5 %}
+{{ "Sa"}}
+{% elif d == 6 %}
+{{ "Su"}}
+{% else %}
+{{"Out of Bounds"}}
 {% endif %}
 {% endmacro %}
 
