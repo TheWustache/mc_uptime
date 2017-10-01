@@ -66,7 +66,7 @@ def get_availible_id(username, app_id):
         FROM availible
         WHERE user = ?
         AND app_id = ?''',
-        (username, app_id))
+              (username, app_id))
     return c.fetchone()['id']
 
 
@@ -82,6 +82,7 @@ def user_exists(username):
     # username should occur once if it exists, fetchone yields None if not
     return result is not None
 
+
 def user_get_user_slot_ids(username, limit=3):
     """Return list of specified (default 3) amount of user_slot ids for user"""
     db, c = get_dbc()
@@ -89,7 +90,7 @@ def user_get_user_slot_ids(username, limit=3):
         FROM user_slot
         WHERE user = ?
         LIMIT ?''',
-        (username, limit))
+              (username, limit))
     return list(s['id'] for s in c.fetchall())
 
 

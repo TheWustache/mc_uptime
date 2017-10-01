@@ -3,6 +3,7 @@ from app.user import login_user, logout_user, loggedin, is_admin, user_exists, u
 from app import app
 from app.db import get_dbc
 from app.settings import get_setting, set_setting
+from app.next_session import next_session
 
 # TODO: split into multiple files
 
@@ -60,7 +61,7 @@ def updateTimes():
         # delete all user_slot entries for user
         c.execute('''DELETE FROM user_slot
             WHERE user = ?''',
-            (username,))
+                  (username,))
         # get slots
         c.execute('''SELECT id
             FROM slot
@@ -74,7 +75,7 @@ def updateTimes():
                     new_entries.append((username, s, day))
         c.executemany('''INSERT INTO user_slot
             VALUES (null, ?, ?, ?)''',
-            new_entries)
+                      new_entries)
         db.commit()
         return redirect(url_for('overview'))
 
@@ -91,7 +92,7 @@ def updateTimes():
         c.execute('''SELECT slot_id, day
             FROM user_slot
             WHERE user = ?''',
-            (username,))
+                  (username,))
         user_slots = c.fetchall()
         return render_template('updateTimes.html.j2', username=username, slots=slots, slot_length=slot_length, user_slots=user_slots)
 
@@ -234,6 +235,7 @@ def ajax_admin_slots_update():
     else:
         abort(403)
 
+
 @app.route('/ajax/admin/slots/add_slot', methods=['POST'])
 def ajax_admin_slots_add_slot():
     if loggedin():
@@ -242,11 +244,12 @@ def ajax_admin_slots_add_slot():
             db, c = get_dbc()
             c.execute('''INSERT INTO slot
                 VALUES (null, ?)''',
-                (request.json['slot'],))
+                      (request.json['slot'],))
             db.commit()
             return ('', 204)
     else:
         abort(403)
+
 
 @app.route('/ajax/admin/slots/remove_slot', methods=['POST'])
 def ajax_admin_slots_remove_slot():
@@ -256,8 +259,37 @@ def ajax_admin_slots_remove_slot():
             db, c = get_dbc()
             c.execute('''DELETE FROM slot
                 WHERE start_time = ?''',
-                (request.json['slot']))
+                      (request.json['slot']))
             db.commit()
             return ('', 204)
     else:
         abort(403)
+
+
+@app.route('/admin/general')
+def admin_general():
+    # user needs to be logged in
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    username = session['username']
+    # forbidden if user does not have access (operator for app or admin)
+    if not is_admin(username):
+        abort(403)
+
+    return render_template('admin_general.html.j2', username=username)
+
+
+@app.route('/ajax/admin/general/recalculate_session', methods=['POST'])
+def ajax_admin_general_recalculate_session():
+    # user needs to be logged in
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    username = session['username']
+    # forbidden if user does not have access (operator for app or admin)
+    if not is_admin(username):
+        abort(403)
+
+    set_setting('next_session', next_session(True))
+    return ('', 204)

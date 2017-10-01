@@ -1,0 +1,15 @@
+{% extends "base.html.j2" %}
+
+{% block head %}
+{{ super() }}
+<script type=text/javascript src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='admin_general.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<h1>Admin Panel - General</h1>
+<button type="button" id="recalculate_session">Recalculate Session</button>
+{% endblock %}

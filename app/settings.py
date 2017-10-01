@@ -3,13 +3,14 @@ from datetime import datetime
 
 settings_path = '/Users/leo/Projects/mc_uptime_server/app/settings.json'
 
+
 def get_setting(setting):
     db, c = get_dbc()
     # fetch from db
     c.execute('''SELECT value, type
         FROM setting
         WHERE key = ?''',
-        (setting,))
+              (setting,))
     result = c.fetchone()
     val = result['value']
     t = result['type']
@@ -19,8 +20,9 @@ def get_setting(setting):
     elif t == 'bool':
         val = val == 'True'
     elif t == 'date':
-        val = datetime.strptime(val, '%Y-%m-%d %H:%M:%S.%f')
+        val = datetime.strptime(val, '%Y-%m-%d %H:%M:%S')
     return val
+
 
 def set_setting(setting, value):
     db, c = get_dbc()
@@ -30,7 +32,7 @@ def set_setting(setting, value):
         t = 'int'
     elif type(value) is bool:
         t = 'bool'
-    elif type(value) is datetime.datetime:
+    elif type(value) is datetime:
         t = 'date'
     # convert value to string
     value = str(value)
@@ -38,5 +40,5 @@ def set_setting(setting, value):
     c.execute('''UPDATE setting
         SET value = ?, type = ?
         WHERE key = ?''',
-        (value, t, setting))
+              (value, t, setting))
     db.commit()
