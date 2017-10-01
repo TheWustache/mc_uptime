@@ -82,6 +82,16 @@ def user_exists(username):
     # username should occur once if it exists, fetchone yields None if not
     return result is not None
 
+def user_get_user_slot_ids(username, limit=3):
+    """Return list of specified (default 3) amount of user_slot ids for user"""
+    db, c = get_dbc()
+    c.execute('''SELECT id
+        FROM user_slot
+        WHERE user = ?
+        LIMIT ?''',
+        (username, limit))
+    return list(s['id'] for s in c.fetchall())
+
 
 def create_user(username, firstname, lastname, password, admin=False, canVote=True):
     # secure password

@@ -1,5 +1,5 @@
 from flask import session, redirect, url_for, render_template, request, abort, jsonify
-from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app, get_availible_id, create_user
+from app.user import login_user, logout_user, loggedin, is_admin, user_exists, user_has_app, get_availible_id, create_user, user_get_user_slot_ids
 from app import app
 from app.db import get_dbc
 from app.settings import get_setting, set_setting
@@ -57,18 +57,35 @@ def updateTimes():
     db, c = get_dbc()
     # if form was submitted
     if request.method == 'POST':
+        # prepare tupel list for execute many
+        update = []
+        for idx, user_slot_id in enumerate(user_get_user_slot_ids(username), start=1):
+            day = request.form['day-' + str(idx)]
+            slot_id = request.form['slot-' + str(idx)]
+            update.append((day, slot_id, user_slot_id))
+        # write changes to db
+        c.executemany('''UPDATE user_slot
+            SET day = ?, slot_id = ?
+            WHERE id = ?''',
+            update)
+        db.commit()
         return redirect(url_for('overview'))
 
     # if page was requested
     else:
-        # get slot start times
-        c.execute('''SELECT start_time
+        # get slot ids and start times
+        c.execute('''SELECT id, start_time
             FROM slot''')
-        result = c.fetchall()
-        start_times = list(s['start_time'] for s in result)
+        slots = c.fetchall()
+        # get user selected slots
+        c.execute('''SELECT day, slot_id
+            FROM user_slot
+            WHERE user = ?''',
+            (username,))
+        user_slots = c.fetchall()
         # get slot length
         slot_length = get_setting('slot_length')
-        return render_template('updateTimes.html.j2', username=username, slots=start_times, slot_length=slot_length)
+        return render_template('updateTimes.html.j2', username=username, slots=slots, slot_length=slot_length, user_slots=user_slots)
 
 
 @app.route('/admin')
