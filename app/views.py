@@ -60,8 +60,10 @@ def updateTimes():
         # prepare tupel list for execute many
         update = []
         for idx, user_slot_id in enumerate(user_get_user_slot_ids(username), start=1):
-            day = request.form['day-' + str(idx)]
-            slot_id = request.form['slot-' + str(idx)]
+            day = int(request.form['day-' + str(idx)])
+            slot_id = int(request.form['slot-' + str(idx)])
+            if slot_id == -1:
+                slot_id = None
             update.append((day, slot_id, user_slot_id))
         # write changes to db
         c.executemany('''UPDATE user_slot
@@ -83,6 +85,10 @@ def updateTimes():
             WHERE user = ?''',
             (username,))
         user_slots = c.fetchall()
+        # set ids to -1 if null
+        for u in user_slots:
+            if u['slot_id'] is None:
+                u['slot_id'] = -1
         # get slot length
         slot_length = get_setting('slot_length')
         return render_template('updateTimes.html.j2', username=username, slots=slots, slot_length=slot_length, user_slots=user_slots)

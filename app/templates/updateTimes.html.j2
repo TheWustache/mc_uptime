@@ -17,6 +17,7 @@
     {% for s in slots %}
     <option value="{{ s['id'] }}" {% if user_slots[outer_loop.index0]['slot_id'] == s['id'] %}selected{% endif %}>{{ timeslot(s['start_time']) + " - " + timeslot(s['start_time'] + slot_length) }}</option>
     {% endfor %}
+    <option value="-1" {% if user_slots[loop.index0]['slot_id'] == -1 %}selected{% endif %}>None</option>
   </select><br>
   {% endfor %}
   <input type="submit" value="Update">
