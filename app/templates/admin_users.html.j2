@@ -14,7 +14,7 @@
 <h2>Users</h2>
 <ul id="users">
   {% for u in users %}
-  <li id="{{ u }}">{{ u }} <a href="#" class="remove_user" data-user="{{ u }}">(X)</a></li>
+  <li id="{{ u }}">{{ u }}<a href="#" class="remove_user" data-user="{{ u }}">(X)</a></li>
   {% endfor %}
 </ul>
 <a href="{{ url_for('new_user') }}">New User</a><br>
