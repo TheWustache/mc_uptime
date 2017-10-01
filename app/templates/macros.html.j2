@@ -22,3 +22,7 @@
 {% macro timeslot(slot) %}
 {{- '%02d' % (slot // 2) -}}:{{- '%02d' % ((slot % 2) * 30) -}}
 {% endmacro %}
+
+{% macro timeIntervall(start, length) %}
+{{- timeslot(start) + " - " + timeslot(start + length) -}}
+{% endmacro %}

@@ -57,40 +57,42 @@ def updateTimes():
     db, c = get_dbc()
     # if form was submitted
     if request.method == 'POST':
-        # prepare tupel list for execute many
-        update = []
-        for idx, user_slot_id in enumerate(user_get_user_slot_ids(username), start=1):
-            day = int(request.form['day-' + str(idx)])
-            slot_id = int(request.form['slot-' + str(idx)])
-            if slot_id == -1:
-                slot_id = None
-            update.append((day, slot_id, user_slot_id))
-        # write changes to db
-        c.executemany('''UPDATE user_slot
-            SET day = ?, slot_id = ?
-            WHERE id = ?''',
-            update)
+        # delete all user_slot entries for user
+        c.execute('''DELETE FROM user_slot
+            WHERE user = ?''',
+            (username,))
+        # get slots
+        c.execute('''SELECT id
+            FROM slot
+            ORDER BY start_time ASC''')
+        slots = list(s['id'] for s in c.fetchall())
+        # for each slot and each weekday: add user_slot entry if checked
+        new_entries = []
+        for s in slots:
+            for day in range(7):
+                if request.form.get('slot:{}-day:{}'.format(s, day)) is not None:
+                    new_entries.append((username, s, day))
+        c.executemany('''INSERT INTO user_slot
+            VALUES (null, ?, ?, ?)''',
+            new_entries)
         db.commit()
         return redirect(url_for('overview'))
 
     # if page was requested
     else:
-        # get slot ids and start times
+        # get slots
         c.execute('''SELECT id, start_time
-            FROM slot''')
+            FROM slot
+            ORDER BY start_time ASC''')
         slots = c.fetchall()
-        # get user selected slots
-        c.execute('''SELECT day, slot_id
+        # get slot length
+        slot_length = get_setting('slot_length')
+        # get slots associated with user
+        c.execute('''SELECT slot_id, day
             FROM user_slot
             WHERE user = ?''',
             (username,))
         user_slots = c.fetchall()
-        # set ids to -1 if null
-        for u in user_slots:
-            if u['slot_id'] is None:
-                u['slot_id'] = -1
-        # get slot length
-        slot_length = get_setting('slot_length')
         return render_template('updateTimes.html.j2', username=username, slots=slots, slot_length=slot_length, user_slots=user_slots)
 
 
