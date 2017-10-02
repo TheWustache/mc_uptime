@@ -8,3 +8,15 @@ app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 from app import views
 from app.db import teardown_db
+
+# initialize controller
+from app.controller import Controller
+from apscheduler.schedulers.background import BackgroundScheduler
+from app.settings import get_setting
+import datetime
+
+with app.app_context():
+    s = BackgroundScheduler()
+    s.start()
+    c = Controller(s)
+    s.add_job(c.run, 'date', run_date=get_setting('next_session'), args=[get_setting('slot_length')])
