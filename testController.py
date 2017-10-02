@@ -8,5 +8,4 @@ app = Flask(__name__)
 with app.app_context():
     s = BackgroundScheduler()
     s.start()
-    c = Controller(s)
-    c.run(6)
+    c = Controller()
