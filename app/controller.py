@@ -177,11 +177,11 @@ class Controller:
         with app.app_context():
             next_date = next_session()
             set_setting('next_session', next_date)
-            self.sched.add_job(self.run, 'date', run_date=datetime.datetime.today() + datetime.timedelta(seconds=5))
+            self.sched.add_job(self.run, 'date', run_date=next_date)
 
     def run(self):
         self.start()
         with app.app_context():
             duration = get_setting('slot_length')/2
             self.sched.add_job(
-                self.stop_and_schedule, 'date', run_date=datetime.datetime.today() + datetime.timedelta(seconds=10))
+                self.stop_and_schedule, 'date', run_date=datetime.datetime.today() + datetime.timedelta(hours=duration))
