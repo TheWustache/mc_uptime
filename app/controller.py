@@ -42,7 +42,7 @@ class Controller:
             print('Resuming already running server.')
             self.mcServer = pexpect.spawn('screen -rd mc')
         else:
-            print('Server not running. Start with myServer.start()')
+            print('Server not running.')
 
     # Start the server
     def start(self):
